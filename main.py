@@ -9,9 +9,9 @@ def main():
 
     start = sys.argv[1]
     end = sys.argv[2]
-    eps = float(sys.argv[3])
-    mint = int(sys.argv[4])
-    time_interval = sys.argv[5]
+    time_interval = sys.argv[3]
+    eps = float(sys.argv[4])
+    mint = int(sys.argv[5])
     file_name = sys.argv[6]
     df = file_load.import_file(file_name)
 
