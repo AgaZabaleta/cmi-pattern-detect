@@ -18,7 +18,7 @@ JGETMOVE_DIR = "/home/me/tools/jGetMove"
 
 # How to use
 
-Usage: `python main.py {start_date} {start_date} {end_date} {frequency} {DBSCAN_epsilon} {DBSCAN_min_t} {csv_file}`
+Usage: `python main.py {start_date} {end_date} {frequency} {DBSCAN_epsilon} {DBSCAN_min_t} {csv_file}`
 
 Example call: `python main.py 2009-05-27 2009-08-27 2D 0.3 4 data.csv`
 
