@@ -4,7 +4,6 @@ from sklearn.cluster import DBSCAN
 import numpy as np
 import pandas as pd
 import directory_config as dconf
-import file_load
 
 def clusterize(df, epsilon, min_t, date_range):
     t, c_id = 0, 0
@@ -71,21 +70,23 @@ def prepare_jgetmove(df, clusters, tag_2_id):
     open(dconf.WORKING_DIR + "/objects.dat", 'w').write(input_data)
 
 def jgetmove():
-    os.system("java -jar " + dconf.JGETMOVE_DIR + "/jGetMove.jar " + dconf.WORKING_DIR + "/objects.dat " + dconf.WORKING_DIR + "/objectstimeindex.dat -o " + dconf.WORKING_DIR + "/results.json -p 2 -s 2 -t 1")
+    os.system("java -jar " 
+            + dconf.JGETMOVE_DIR + "/jGetMove.jar " 
+            + dconf.WORKING_DIR + "/objects.dat " 
+            + dconf.WORKING_DIR + "/objectstimeindex.dat -o " 
+            + dconf.WORKING_DIR + "/results.json -p 2 -s 2 -t 1")
 
     return json.load(open("" + dconf.WORKING_DIR + "/results.json"))
 
-def get_data(df, epsilon, min_t, date_range):
+def get_patterns(df, epsilon, min_t, date_range):
     clstrs, clstrs_pos, tag_2_id = clusterize(df, epsilon, min_t, date_range)
     prepare_jgetmove(df, clstrs, tag_2_id)
     results = jgetmove()
 
-    json_data = file_load.get_raw_data(df)
-
-    json_data['clusters'] = []
+    patterns = {"clusters":[]}
     nodes = results['nodes']
     for node in nodes:
-        json_data['clusters'].append({
+        patterns['clusters'].append({
             'lon':clstrs_pos[node["id"]][0],
             'lat':clstrs_pos[node["id"]][1],
             'time_start':clstrs[node["id"]]["time_start"].value,
@@ -95,7 +96,7 @@ def get_data(df, epsilon, min_t, date_range):
 
     for pattern_nb in range(0, len(results["patterns"])):
         pattern_name = str(results['patterns'][pattern_nb]["name"]).lower()
-        json_data[pattern_name] = []
+        patterns[pattern_name] = []
 
         links = pd.DataFrame(results['patterns'][pattern_nb]['links'])
         for l_idx, l_row in links.iterrows():
@@ -111,6 +112,6 @@ def get_data(df, epsilon, min_t, date_range):
                 'target_id':int(l_row["target"]),
                 'objects':ids.tolist()
             }
-            json_data[pattern_name].append(to_append)
+            patterns[pattern_name].append(to_append)
 
-    return json_data
+    return patterns

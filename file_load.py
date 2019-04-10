@@ -9,8 +9,7 @@ def import_file(file_name):
     """Run script"""
     pd.options.mode.chained_assignment = None  # default='warn'
     original_data = pd.read_csv(file_name)
-    original_data = original_data[["object-id", "timestamp", "visible", "longitude", "latitude"]]
-    original_data = original_data[(original_data.visible == True)]
+    original_data = original_data[["object-id", "timestamp", "longitude", "latitude"]]
 
     raw_new_data = {
         'timestamp':[],
@@ -33,13 +32,16 @@ def get_raw_data(df):
     """Extracts the raw positions and timestamps from file and prepare the base json structure"""
     grps = df.groupby("obj_id")
 
-    to_file = {'raw':{}}
+    raws = {
+        'start': df['timestamp'].min().value,
+        'end': df['timestamp'].max().value
+    }
 
     for i, grp in grps:
         for _, row in grp.iterrows():
-            if not i in to_file['raw']:
+            if not i in raws:
                 id_data = {'positions':[]}
-                to_file['raw'][i] = id_data
+                raws[i] = id_data
 
             current_data = {
                 'lon': row['lon'],
@@ -47,9 +49,9 @@ def get_raw_data(df):
                 'timestamp': row['timestamp'].value
             }
 
-            to_file['raw'][i]['positions'].append(current_data)
+            raws[i]['positions'].append(current_data)
 
-    return to_file
+    return raws
 
 def write_json(data, name="data"):
     """Create data.json"""
