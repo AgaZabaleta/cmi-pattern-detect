@@ -3,6 +3,7 @@ Script to serialize trajectories csv into json
 """
 import json
 import pandas as pd
+import numpy as np
 import directory_config as dconf
 
 def import_file(file_name):
@@ -34,14 +35,33 @@ def get_raw_data(df):
 
     raws = {
         'start': df['timestamp'].min().value,
-        'end': df['timestamp'].max().value
+        'end': df['timestamp'].max().value,
+        'objects': {}
+    }
+
+    delta = grps['timestamp'].diff().dropna().mean()
+
+    rest = delta
+    d_days = rest / np.timedelta64(1, 'D')
+    rest = rest - np.timedelta64(int(d_days), 'D')
+    d_hours = rest / np.timedelta64(1, 'h')
+    rest = rest - np.timedelta64(int(d_hours), 'h')
+    d_minutes = rest / np.timedelta64(1, 'm')
+    rest = rest - np.timedelta64(int(d_minutes), 'm')
+    d_seconds = rest / np.timedelta64(1, 's')
+
+    raws['timestep'] = {
+        'days': int(d_days),
+        'hours': int(d_hours),
+        'minutes': int(d_minutes),
+        'seconds': int(d_seconds)
     }
 
     for i, grp in grps:
         for _, row in grp.iterrows():
-            if not i in raws:
+            if not i in raws['objects']:
                 id_data = {'positions':[]}
-                raws[i] = id_data
+                raws['objects'][i] = id_data
 
             current_data = {
                 'lon': row['lon'],
@@ -49,7 +69,7 @@ def get_raw_data(df):
                 'timestamp': row['timestamp'].value
             }
 
-            raws[i]['positions'].append(current_data)
+            raws['objects'][i]['positions'].append(current_data)
 
     return raws
 
