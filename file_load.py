@@ -6,6 +6,24 @@ import pandas as pd
 import numpy as np
 import directory_config as dconf
 
+def to_delta_object(delta):
+
+    rest = delta
+    d_days = rest / np.timedelta64(1, 'D')
+    rest = rest - np.timedelta64(int(d_days), 'D')
+    d_hours = rest / np.timedelta64(1, 'h')
+    rest = rest - np.timedelta64(int(d_hours), 'h')
+    d_minutes = rest / np.timedelta64(1, 'm')
+    rest = rest - np.timedelta64(int(d_minutes), 'm')
+    d_seconds = rest / np.timedelta64(1, 's')
+
+    return {
+        'days': int(d_days),
+        'hours': int(d_hours),
+        'minutes': int(d_minutes),
+        'seconds': int(d_seconds)
+    }
+
 def import_file(file_name):
     """Run script"""
     pd.options.mode.chained_assignment = None  # default='warn'
@@ -41,21 +59,7 @@ def get_raw_data(df):
 
     delta = grps['timestamp'].diff().dropna().mean()
 
-    rest = delta
-    d_days = rest / np.timedelta64(1, 'D')
-    rest = rest - np.timedelta64(int(d_days), 'D')
-    d_hours = rest / np.timedelta64(1, 'h')
-    rest = rest - np.timedelta64(int(d_hours), 'h')
-    d_minutes = rest / np.timedelta64(1, 'm')
-    rest = rest - np.timedelta64(int(d_minutes), 'm')
-    d_seconds = rest / np.timedelta64(1, 's')
-
-    raws['timestep'] = {
-        'days': int(d_days),
-        'hours': int(d_hours),
-        'minutes': int(d_minutes),
-        'seconds': int(d_seconds)
-    }
+    raws["timestep"] = to_delta_object(delta)
 
     for i, grp in grps:
         for _, row in grp.iterrows():
