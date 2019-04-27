@@ -16,18 +16,28 @@ def getmove(argv):
 
     if start.upper().isupper():
         start = df['timestamp'].min()
-        print(start)
     elif start.isdigit():
         sys.exit("error:start date should be a timestamp YYYY-MM-DD or 's' to select the earliest date")
+    else:
+        start = pd.to_datetime(start)
 
     if end.upper().isupper():
         end = df['timestamp'].max()
     elif end.isdigit():
         sys.exit("error:end date should be a timestamp YYYY-MM-DD or 'e' to select the latest date")
+    else:
+        end = pd.to_datetime(end)
 
     date_range = pd.date_range(start=start, end=end, freq=time_interval)
 
     patterns_json = clusters.get_patterns(df, eps, mint, date_range)
+    patterns_json["infos"] = {
+        'epsilon': eps,
+        'min_t': mint,
+        'start':start.value,
+        'end':end.value,
+        'clustering_period': file_load.to_delta_object(pd.Timedelta(date_range.freq))
+    }
 
     file_load.write_json(patterns_json, name="patterns_"+file_name)
 
